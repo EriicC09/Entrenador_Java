@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d0d12">
+<title>Entrenador Java</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0d0d12;
+  --s1:      #16161f;
+  --s2:      #1e1e2a;
+  --s3:      #252535;
+  --border:  rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --acc:     #6ee7b7;
+  --acc2:    #34d399;
+  --purple:  #a78bfa;
+  --amber:   #fbbf24;
+  --red:     #f87171;
+  --blue:    #60a5fa;
+  --text:    #e8f5f0;
+  --muted:   #6b7a72;
+  --mono:    'JetBrains Mono', monospace;
+  --head:    'Syne', sans-serif;
+  --body:    'DM Sans', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--body);overflow:hidden}
+#app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── NAV BAR ── */
+nav{display:flex;background:var(--s1);border-bottom:1px solid var(--border);flex-shrink:0}
+nav button{flex:1;padding:12px 4px 10px;background:none;border:none;color:var(--muted);font-family:var(--body);font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .15s;border-bottom:2px solid transparent;position:relative}
+nav button .ico{font-size:20px;line-height:1}
+nav button.active{color:var(--acc);border-bottom-color:var(--acc)}
+nav button:active{background:var(--s2)}
+
+/* ── SCREENS ── */
+.screen{display:none;flex:1;overflow:hidden;flex-direction:column}
+.screen.active{display:flex}
+
+/* ══════════════════════════════
+   HOME SCREEN
+══════════════════════════════ */
+#sc-home{overflow-y:auto;padding:1.25rem 1rem 5rem}
+.home-header{margin-bottom:1.5rem}
+.home-header h1{font-family:var(--head);font-size:26px;font-weight:800;letter-spacing:-0.5px;line-height:1.1}
+.home-header h1 span{color:var(--acc)}
+.home-header p{font-size:13px;color:var(--muted);margin-top:6px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.5rem}
+.stat-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
+.stat-card .n{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--acc)}
+.stat-card .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:.6rem;padding-left:2px;font-family:var(--head)}
+.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem}
+.topic-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:14px 12px;cursor:pointer;transition:border-color .15s,background .15s;position:relative;overflow:hidden}
+.topic-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--bar-color,var(--acc));opacity:.4;border-radius:14px 14px 0 0}
+.topic-card:active{background:var(--s2)}
+.topic-card .ico{font-size:22px;margin-bottom:8px;display:block}
+.topic-card .name{font-family:var(--head);font-size:13px;font-weight:700;line-height:1.3}
+.topic-card .sub{font-size:11px;color:var(--muted);margin-top:3px}
+.topic-card .badge{position:absolute;top:10px;right:10px;font-size:10px;font-family:var(--mono);color:var(--acc);background:rgba(110,231,183,.1);padding:2px 7px;border-radius:20px}
+
+/* ══════════════════════════════
+   EXERCISE SCREEN
+══════════════════════════════ */
+#sc-exercise{flex-direction:column}
+.ex-topbar{display:flex;align-items:center;gap:8px;padding:.75rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--s1)}
+.back-btn{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--text);cursor:pointer;white-space:nowrap}
+.ex-tag{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
+.dots{display:flex;gap:4px;margin-left:auto}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.dot.on{background:var(--acc)}
+.ex-body{flex:1;overflow-y:auto;padding:1rem}
+.ex-q{font-size:15px;line-height:1.65;margin-bottom:1rem}
+pre.code{background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:.875rem;font-family:var(--mono);font-size:12px;line-height:1.75;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin-bottom:1rem;color:#86efac}
+textarea#ans{width:100%;min-height:110px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:.875rem;font-family:var(--mono);font-size:13px;color:var(--text);resize:none;outline:none;line-height:1.6;transition:border-color .15s}
+textarea#ans:focus{border-color:var(--acc)}
+.fb{margin:1rem 0 1.5rem;padding:1rem;border-radius:12px;font-size:13px;line-height:1.65;display:none}
+.fb.ok{background:rgba(110,231,183,.08);border:1px solid rgba(110,231,183,.2)}
+.fb.bad{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.18)}
+.fb-title{font-family:var(--head);font-size:15px;font-weight:700;margin-bottom:8px}
+.fb.ok .fb-title{color:var(--acc)}
+.fb.bad .fb-title{color:var(--red)}
+.fb pre{font-family:var(--mono);font-size:12px;margin-top:8px;white-space:pre-wrap;word-break:break-all;opacity:.85;background:var(--s3);padding:.75rem;border-radius:8px}
+.hint-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:10px}
+.hint-txt{font-size:13px;margin-top:4px;color:rgba(232,245,240,.7)}
+.action-bar{padding:.875rem 1rem;border-top:1px solid var(--border);background:var(--bg);display:flex;gap:8px;flex-shrink:0}
+.btn-check{flex:1;background:var(--acc2);color:#0d0d12;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--head)}
+.btn-check:disabled{opacity:.35}
+.btn-next{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;font-size:14px;color:var(--text);cursor:pointer;font-family:var(--body)}
+
+/* ══════════════════════════════
+   STUDY SCREEN
+══════════════════════════════ */
+#sc-study{flex-direction:column}
+.study-topbar{display:flex;align-items:center;gap:8px;padding:.75rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--s1)}
+.study-topbar h2{font-family:var(--head);font-size:16px;font-weight:700;flex:1}
+.study-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.chapter-tabs{display:flex;overflow-x:auto;gap:6px;padding:.75rem 1rem .5rem;border-bottom:1px solid var(--border);flex-shrink:0;scrollbar-width:none}
+.chapter-tabs::-webkit-scrollbar{display:none}
+.ch-tab{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;white-space:nowrap;cursor:pointer;color:var(--muted);font-family:var(--head);font-weight:600;transition:all .15s;flex-shrink:0}
+.ch-tab.active{background:var(--acc);color:#0d0d12;border-color:var(--acc)}
+.study-content{flex:1;overflow-y:auto;padding:1rem 1rem 5rem}
+.study-section{display:none}
+.study-section.active{display:block}
+.study-section h3{font-family:var(--head);font-size:18px;font-weight:800;margin-bottom:.25rem;color:var(--acc)}
+.study-section .intro{font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6}
+.concept{background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.concept-header{padding:.875rem 1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.concept-header .ct{font-family:var(--head);font-size:14px;font-weight:700}
+.concept-header .arrow{color:var(--muted);font-size:12px;transition:transform .2s;flex-shrink:0}
+.concept.open .arrow{transform:rotate(180deg)}
+.concept-body{display:none;padding:0 1rem 1rem;font-size:13px;line-height:1.7;color:rgba(232,245,240,.85)}
+.concept.open .concept-body{display:block}
+.concept-body pre{font-family:var(--mono);font-size:12px;background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:.75rem;margin:.6rem 0;white-space:pre-wrap;word-break:break-all;color:#86efac;line-height:1.7}
+.concept-body strong{color:var(--acc);font-weight:600}
+.concept-body ul{padding-left:1.2rem;margin:.4rem 0}
+.concept-body ul li{margin:.25rem 0}
+.concept-body .note{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:.6rem .875rem;margin:.6rem 0;font-size:12px;color:rgba(251,191,36,.9)}
+.tag-pill{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:20px;margin-right:4px;margin-bottom:4px}
+
+/* tag colours */
+.tag-output{background:rgba(110,231,183,.12);color:#6ee7b7}
+.tag-errors{background:rgba(248,113,113,.12);color:#f87171}
+.tag-blanks{background:rgba(251,191,36,.12);color:#fbbf24}
+.tag-conversion{background:rgba(96,165,250,.12);color:#60a5fa}
+.tag-implement{background:rgba(167,139,250,.12);color:#a78bfa}
+.tag-methods{background:rgba(244,114,182,.12);color:#f472b6}
+.tag-concepts{background:rgba(52,211,153,.12);color:#34d399}
+.tag-jlabels{background:rgba(251,146,60,.12);color:#fb923c}
+.tag-persistence{background:rgba(148,163,184,.12);color:#94a3b8}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ HOME ══ -->
+<div id="sc-home" class="screen active">
+  <div class="home-header">
+    <h1>Entrenador<br><span>Java ☕</span></h1>
+    <p>Estudia el temario y practica ejercicios</p>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="n" id="s-done">0</div><div class="l">hechos</div></div>
+    <div class="stat-card"><div class="n" id="s-ok">0</div><div class="l">correctos</div></div>
+    <div class="stat-card"><div class="n" id="s-pct">—</div><div class="l">acierto</div></div>
+  </div>
+  <div class="section-label">Temas de práctica</div>
+  <div class="topic-grid" id="topic-grid"></div>
+</div>
+
+<!-- ══ EXERCISE ══ -->
+<div id="sc-exercise" class="screen">
+  <div class="ex-topbar">
+    <button class="back-btn" onclick="goHome()">← Inicio</button>
+    <span class="ex-tag" id="ex-tag"></span>
+    <div class="dots" id="ex-dots"></div>
+  </div>
+  <div class="ex-body" id="ex-body">
+    <div class="ex-q" id="ex-q"></div>
+    <pre class="code" id="ex-code" style="display:none"></pre>
+    <textarea id="ans" placeholder="Escribe tu respuesta aquí..."></textarea>
+    <div class="fb" id="fb"></div>
+  </div>
+  <div class="action-bar">
+    <button class="btn-check" id="btn-check" onclick="checkAnswer()">Comprobar</button>
+    <button class="btn-next" onclick="nextExercise()">Siguiente →</button>
+  </div>
+</div>
+
+<!-- ══ STUDY ══ -->
+<div id="sc-study" class="screen">
+  <div class="study-topbar">
+    <h2>📚 Temario</h2>
+  </div>
+  <div class="study-body">
+    <div class="chapter-tabs" id="ch-tabs"></div>
+    <div class="study-content" id="study-content"></div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <button id="nav-home" class="active" onclick="showScreen('home')">
+    <span class="ico">🏠</span>Inicio
+  </button>
+  <button id="nav-study" onclick="showScreen('study')">
+    <span class="ico">📚</span>Estudiar
+  </button>
+  <button id="nav-exercise" onclick="showScreen('exercise')">
+    <span class="ico">✏️</span>Practicar
+  </button>
+</nav>
+
+</div><!-- #app -->
+
+<script>
+/* ═══════════════════════════════════════
+   DATA — TOPICS
+═══════════════════════════════════════ */
+const topics = [
+  {id:'output',     label:'Salida pantalla', icon:'🖥️', sub:'¿Qué imprime?',       tag:'output',      color:'#6ee7b7'},
+  {id:'errors',     label:'Errores',         icon:'🐛', sub:'Bugs y syntax errors', tag:'errors',      color:'#f87171'},
+  {id:'blanks',     label:'Rellenar blancos',icon:'✏️', sub:'Completar código',     tag:'blanks',      color:'#fbbf24'},
+  {id:'conversion', label:'Conversiones',    icon:'🔄', sub:'Código equivalente',   tag:'conversion',  color:'#60a5fa'},
+  {id:'implement',  label:'Implementar',     icon:'⚙️', sub:'Escribir fragmentos',  tag:'implement',   color:'#a78bfa'},
+  {id:'methods',    label:'Crear métodos',   icon:'🔧', sub:'Definir métodos',      tag:'methods',     color:'#f472b6'},
+  {id:'concepts',   label:'Conceptos',       icon:'📖', sub:'Explicar términos',    tag:'concepts',    color:'#34d399'},
+  {id:'jlabels',    label:'JLabels / GUI',   icon:'🪟', sub:'Interfaces gráficas',  tag:'jlabels',     color:'#fb923c'},
+  {id:'persistence',label:'Persistencia BD', icon:'🗄️', sub:'JDBC y BD',            tag:'persistence', color:'#94a3b8'},
+];
+
+/* ═══════════════════════════════════════
+   DATA — EXERCISES
+═══════════════════════════════════════ */
+const exercises = {
+  output:[
+    {q:'¿Cuál es la salida exacta de este código?',
+     code:`int x = 5;\nint y = 2;\nSystem.out.println(x + y);\nSystem.out.println(x * y);\nSystem.out.println(x / y);\nSystem.out.println(x % y);`,
+     a:'7\n10\n2\n1',
+     hint:'División entera entre ints trunca el decimal. 5/2 = 2, no 2.5'},
+    {q:'¿Qué imprime este bucle anidado?',
+     code:`for (int i = 0; i < 3; i++) {\n    for (int j = i; j < 3; j++) {\n        System.out.print(j + " ");\n    }\n    System.out.println();\n}`,
+     a:'0 1 2 \n1 2 \n2 ',
+     hint:'El bucle interior empieza en i. Traza: i=0→j=0,1,2 | i=1→j=1,2 | i=2→j=2'},
+    {q:'¿Qué imprime este código con Strings?',
+     code:`String a = "Hola";\nString b = "Hola";\nString c = new String("Hola");\nSystem.out.println(a == b);\nSystem.out.println(a == c);\nSystem.out.println(a.equals(c));`,
+     a:'true\nfalse\ntrue',
+     hint:'a y b comparten literal del string pool. c es nuevo objeto en heap. .equals() compara contenido.'},
+    {q:'¿Qué imprime este código con casting?',
+     code:`double d = 9.99;\nint i = (int) d;\nSystem.out.println(d);\nSystem.out.println(i);\nSystem.out.println((double)(10/3));`,
+     a:'9.99\n9\n3.0',
+     hint:'(int) trunca, no redondea. 10/3 es división entera primero → 3, luego cast a double → 3.0'},
+  ],
+  errors:[
+    {q:'Este código tiene 2 errores. Identifícalos y corrígelos:',
+     code:`public class Ejemplo {\n    public static void main(String[] args) {\n        int[] nums = new int[5];\n        for (int i = 0; i <= 5; i++) {\n            nums[i] = i * 2\n        }\n    }\n}`,
+     a:'1) i <= 5 → debe ser i < 5 (ArrayIndexOutOfBoundsException en i=5)\n2) Falta ; al final de: nums[i] = i * 2',
+     hint:'Array de tamaño 5 tiene índices 0..4. El <= 5 intenta acceder al índice 5.'},
+    {q:'Encuentra el error lógico en este método:',
+     code:`public static boolean esPrimo(int n) {\n    for (int i = 2; i < n; i++) {\n        if (n % i == 0) {\n            return true;\n        }\n    }\n    return false;\n}`,
+     a:'Los return están invertidos.\nSi n % i == 0 → el número NO es primo → return false.\nAl salir sin divisores → return true.',
+     hint:'Si encontramos un divisor exacto, el número NO es primo.'},
+    {q:'¿Qué error hay aquí? ¿Cómo se corrige?',
+     code:`public class Test {\n    int valor = 10;\n    public static void main(String[] args) {\n        System.out.println(valor);\n    }\n}`,
+     a:'Error: no se puede acceder a un atributo de instancia desde un método estático.\nSolución 1: declarar "static int valor = 10;"\nSolución 2: Test t = new Test(); System.out.println(t.valor);',
+     hint:'main es static, no pertenece a ningún objeto. No puede acceder a atributos de instancia directamente.'},
+  ],
+  blanks:[
+    {q:'Rellena los blancos para que el método devuelva el mayor de dos números:',
+     code:`public static int mayor(int a, int b) {\n    if (a ___ b) {\n        return ___;\n    }\n    return ___;\n}`,
+     a:'> , a , b',
+     hint:'Si a es mayor que b retorna a, si no retorna b.'},
+    {q:'Rellena los blancos para declarar y usar un ArrayList de Strings:',
+     code:`import java.util.___;\n\nArrayList<___> lista = new ArrayList<>();\nlista.___(\"Java\");\nString primero = lista.___(0);`,
+     a:'ArrayList , String , add , get',
+     hint:'ArrayList está en java.util. Métodos: add() para añadir, get(índice) para obtener.'},
+    {q:'Completa el constructor de esta clase:',
+     code:`public class Persona {\n    String nombre;\n    int edad;\n\n    public ___(String nombre, int edad) {\n        ___.nombre = nombre;\n        ___.edad = edad;\n    }\n}`,
+     a:'Persona , this , this',
+     hint:'El constructor tiene el mismo nombre que la clase. this distingue atributo del parámetro.'},
+  ],
+  conversion:[
+    {q:'Convierte este for clásico a un for-each equivalente:',
+     code:`String[] frutas = {"manzana", "pera", "uva"};\nfor (int i = 0; i < frutas.length; i++) {\n    System.out.println(frutas[i]);\n}`,
+     a:'for (String fruta : frutas) {\n    System.out.println(fruta);\n}',
+     hint:'For-each: for (Tipo var : coleccion). Sin índice ni .length'},
+    {q:'Convierte el if-else a operador ternario:',
+     code:`int edad = 20;\nString estado;\nif (edad >= 18) {\n    estado = "mayor";\n} else {\n    estado = "menor";\n}`,
+     a:'String estado = (edad >= 18) ? "mayor" : "menor";',
+     hint:'condición ? valorSiTrue : valorSiFalse'},
+    {q:'Convierte este while a un for equivalente:',
+     code:`int i = 0;\nwhile (i < 5) {\n    System.out.println(i);\n    i++;\n}`,
+     a:'for (int i = 0; i < 5; i++) {\n    System.out.println(i);\n}',
+     hint:'El for agrupa init, condición e incremento en una sola línea.'},
+  ],
+  implement:[
+    {q:'Implementa un bucle que imprima los números del 1 al 10 que sean pares.',
+     code:'',
+     a:'for (int i = 1; i <= 10; i++) {\n    if (i % 2 == 0) {\n        System.out.println(i);\n    }\n}',
+     hint:'Usa i % 2 == 0 para comprobar si es par.'},
+    {q:'Implementa el código para invertir un String sin funciones auxiliares.',
+     code:`String original = "Java";\nString invertido = "";\n// Tu código aquí`,
+     a:'for (int i = original.length() - 1; i >= 0; i--) {\n    invertido += original.charAt(i);\n}',
+     hint:'Recorre el String de atrás hacia adelante con charAt(i).'},
+    {q:'Implementa un método que cuente cuántas veces aparece una letra en un String.',
+     code:`// contar("programacion", 'a') → 3`,
+     a:`public static int contar(String texto, char letra) {\n    int count = 0;\n    for (int i = 0; i < texto.length(); i++) {\n        if (texto.charAt(i) == letra) count++;\n    }\n    return count;\n}`,
+     hint:'Recorre con charAt(i) y compara con == para char.'},
+  ],
+  methods:[
+    {q:'Crea un método estático que reciba un array de enteros y devuelva la suma.',
+     code:'',
+     a:'public static int suma(int[] arr) {\n    int total = 0;\n    for (int n : arr) {\n        total += n;\n    }\n    return total;\n}',
+     hint:'static, retorna int, parámetro int[]. Puedes usar for-each.'},
+    {q:'Crea un método que devuelva true si un String es palíndromo.',
+     code:'',
+     a:'public static boolean esPalindromo(String s) {\n    String inv = new StringBuilder(s).reverse().toString();\n    return s.equals(inv);\n}',
+     hint:'StringBuilder.reverse() o comparar desde los extremos con charAt().'},
+    {q:'Crea un método que reciba un entero y devuelva true si es par.',
+     code:'',
+     a:'public static boolean esPar(int n) {\n    return n % 2 == 0;\n}',
+     hint:'n % 2 == 0 → es par.'},
+  ],
+  concepts:[
+    {q:'¿Qué es la herencia en Java? Da un ejemplo con las palabras clave correctas.',
+     code:'',
+     a:'La herencia permite que una subclase herede atributos y métodos de una superclase.\nPalabra clave: extends\n\npublic class Animal { ... }\npublic class Perro extends Animal { ... }\n\nPerro hereda todo lo public/protected de Animal.\nsuper() llama al constructor padre.',
+     hint:'Palabras clave: extends, super, @Override'},
+    {q:'Explica la diferencia entre == y .equals() para Strings.',
+     code:'',
+     a:'== compara referencias (misma dirección de memoria).\n.equals() compara el contenido (los caracteres).\n\nPara comparar valores de Strings SIEMPRE usar .equals()',
+     hint:'Los Strings son objetos. == compara direcciones de memoria.'},
+    {q:'¿Qué es una excepción y cómo se gestiona?',
+     code:'',
+     a:'Una excepción es un error en tiempo de ejecución.\n\ntry {\n    // código que puede fallar\n} catch (TipoException e) {\n    // manejo del error\n} finally {\n    // siempre se ejecuta\n}',
+     hint:'try → código arriesgado. catch → captura el error. finally → siempre se ejecuta.'},
+  ],
+  jlabels:[
+    {q:'Crea un JFrame básico con un JLabel "Hola Mundo" centrado.',
+     code:`import javax.swing.*;\npublic class Ventana {\n    public static void main(String[] args) {\n        // Tu código\n    }\n}`,
+     a:'JFrame frame = new JFrame("Mi ventana");\nframe.setSize(400, 300);\nframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);\nJLabel label = new JLabel("Hola Mundo", SwingConstants.CENTER);\nframe.add(label);\nframe.setVisible(true);',
+     hint:'Orden: JFrame → setSize → setDefaultCloseOperation → JLabel → add → setVisible(true)'},
+    {q:'Añade un JButton con ActionListener que cambie el texto de un JLabel.',
+     code:`JFrame frame = new JFrame();\nJLabel label = new JLabel("Texto inicial");\nJButton boton = new JButton("Cambiar");\n// Añade el ActionListener`,
+     a:'boton.addActionListener(e -> {\n    label.setText("Texto cambiado");\n});\nframe.setLayout(new FlowLayout());\nframe.add(label);\nframe.add(boton);\nframe.setSize(300, 200);\nframe.setVisible(true);',
+     hint:'Lambda ActionListener: boton.addActionListener(e -> { ... })'},
+    {q:'¿Qué hace setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)?',
+     code:'',
+     a:'Define qué pasa al cerrar la ventana.\nEXIT_ON_CLOSE termina el proceso JVM al cerrar.\nSin esta línea, la ventana se cierra visualmente pero el programa sigue ejecutándose.',
+     hint:'Sin esto, cerrar la ventana no termina el programa Java.'},
+  ],
+  persistence:[
+    {q:'Escribe el código JDBC mínimo para conectarse a MySQL.',
+     code:`// BD: mydb, usuario: root, contraseña: 1234`,
+     a:'Connection con = DriverManager.getConnection(\n    "jdbc:mysql://localhost:3306/mydb",\n    "root",\n    "1234"\n);',
+     hint:'DriverManager.getConnection(url, user, pass). URL: jdbc:mysql://host:puerto/basedatos'},
+    {q:'¿Qué falta en este código JDBC para que sea correcto?',
+     code:`Connection con = DriverManager.getConnection(url, u, p);\nStatement stmt = con.createStatement();\nResultSet rs = stmt.executeQuery("SELECT nombre FROM usuarios");\nwhile (rs.next()) {\n    System.out.println(rs.getString("nombre"));\n}`,
+     a:'Falta manejo de excepciones y cerrar recursos:\n\ntry {\n    // código\n} catch (SQLException e) {\n    e.printStackTrace();\n} finally {\n    rs.close(); stmt.close(); con.close();\n}',
+     hint:'Toda operación JDBC puede lanzar SQLException. Hay que cerrar Connection, Statement y ResultSet.'},
+    {q:'Diferencia entre Statement y PreparedStatement.',
+     code:'',
+     a:'Statement: SQL estático, vulnerable a SQL Injection.\n  stmt.executeQuery("SELECT * FROM u WHERE id=" + id);\n\nPreparedStatement: precompila la consulta, usa parámetros (?). Más seguro.\n  PreparedStatement ps = con.prepareStatement("SELECT * FROM u WHERE id=?");\n  ps.setInt(1, id);\n  ps.executeQuery();',
+     hint:'PreparedStatement usa ? como marcadores y evita SQL Injection.'},
+  ],
+};
+
+/* ═══════════════════════════════════════
+   DATA — STUDY CHAPTERS
+═══════════════════════════════════════ */
+const chapters = [
+  {id:'basico', label:'☕ Básico'},
+  {id:'poo',    label:'🧬 POO'},
+  {id:'arrays', label:'📦 Arrays'},
+  {id:'strings',label:'🔤 Strings'},
+  {id:'excep',  label:'⚠️ Excepciones'},
+  {id:'swing',  label:'🪟 Swing'},
+  {id:'jdbc',   label:'🗄️ JDBC'},
+];
+
+const studyContent = {
+  basico: {
+    title:'Java Básico',
+    intro:'Fundamentos del lenguaje: tipos, operadores, estructuras de control.',
+    concepts:[
+      {title:'Tipos de datos primitivos',
+       body:`<strong>Enteros:</strong> byte(8b), short(16b), int(32b), long(64b)<br>
+<strong>Decimales:</strong> float(32b), double(64b)<br>
+<strong>Otros:</strong> char(16b, un carácter), boolean(true/false)
+<pre>int edad = 25;
+double precio = 9.99;
+char letra = 'A';
+boolean activo = true;</pre>
+<div class="note">💡 Por defecto los decimales son double. Para float añade f: 3.14f</div>`},
+      {title:'Operadores importantes',
+       body:`<strong>Aritméticos:</strong> + - * / %<br>
+<strong>Comparación:</strong> == != > < >= <=<br>
+<strong>Lógicos:</strong> && (AND), || (OR), ! (NOT)
+<pre>int x = 10 % 3;  // → 1 (resto)
+boolean ok = (x > 0) && (x < 5);  // → true</pre>
+<div class="note">⚠️ División entera: 10/3 = 3 (no 3.33). Para decimal: 10.0/3</div>`},
+      {title:'Estructuras de control',
+       body:`<strong>if / else if / else:</strong>
+<pre>if (edad >= 18) {
+    System.out.println("Mayor");
+} else {
+    System.out.println("Menor");
+}</pre>
+<strong>Operador ternario:</strong>
+<pre>String r = (edad >= 18) ? "Mayor" : "Menor";</pre>
+<strong>Switch:</strong>
+<pre>switch (dia) {
+    case 1: System.out.println("Lunes"); break;
+    case 2: System.out.println("Martes"); break;
+    default: System.out.println("Otro");
+}</pre>`},
+      {title:'Bucles',
+       body:`<strong>for:</strong>
+<pre>for (int i = 0; i < 5; i++) { ... }</pre>
+<strong>for-each (para arrays/colecciones):</strong>
+<pre>for (String item : lista) { ... }</pre>
+<strong>while:</strong>
+<pre>while (condicion) { ... }</pre>
+<strong>do-while (se ejecuta al menos una vez):</strong>
+<pre>do { ... } while (condicion);</pre>
+<div class="note">💡 break termina el bucle. continue salta a la siguiente iteración.</div>`},
+    ]},
+  poo:{
+    title:'Programación Orientada a Objetos',
+    intro:'Clases, objetos, herencia, polimorfismo, encapsulación e interfaces.',
+    concepts:[
+      {title:'Clases y objetos',
+       body:`Una <strong>clase</strong> es la plantilla. Un <strong>objeto</strong> es una instancia.
+<pre>public class Persona {
+    // Atributos
+    String nombre;
+    int edad;
+
+    // Constructor
+    public Persona(String nombre, int edad) {
+        this.nombre = nombre;
+        this.edad = edad;
+    }
+
+    // Método
+    public void saludar() {
+        System.out.println("Hola, soy " + nombre);
+    }
+}
+
+// Crear objeto
+Persona p = new Persona("Ana", 25);
+p.saludar();</pre>`},
+      {title:'Encapsulación (private + getters/setters)',
+       body:`Ocultar los atributos con <strong>private</strong> y acceder con métodos públicos.
+<pre>public class Cuenta {
+    private double saldo;
+
+    public double getSaldo() {
+        return saldo;
+    }
+    public void setSaldo(double s) {
+        if (s >= 0) this.saldo = s;
+    }
+}</pre>
+<div class="note">💡 Beneficio: controlas cómo se lee/modifica el atributo.</div>`},
+      {title:'Herencia (extends)',
+       body:`Una subclase hereda atributos y métodos de la superclase.
+<pre>public class Animal {
+    String nombre;
+    public void comer() {
+        System.out.println("comiendo...");
+    }
+}
+
+public class Perro extends Animal {
+    public void ladrar() {
+        System.out.println("¡Guau!");
+    }
+}
+
+Perro d = new Perro();
+d.comer();   // heredado de Animal
+d.ladrar();  // propio de Perro</pre>
+<div class="note">⚠️ Java solo permite herencia simple (una sola superclase).</div>`},
+      {title:'Sobreescritura (@Override) y super',
+       body:`<strong>@Override</strong>: reemplaza un método de la superclase.<br>
+<strong>super</strong>: llama al constructor o método de la superclase.
+<pre>public class Animal {
+    public String sonido() { return "..."; }
+}
+
+public class Gato extends Animal {
+    @Override
+    public String sonido() { return "Miau"; }
+}
+
+// super en constructor:
+public class Gato extends Animal {
+    public Gato(String nombre) {
+        super(nombre); // llama al constructor de Animal
+    }
+}</pre>`},
+      {title:'Polimorfismo',
+       body:`Un objeto puede comportarse como su tipo o como un tipo padre.
+<pre>Animal a = new Perro(); // polimorfismo
+a.sonido(); // ejecuta el método de Perro</pre>
+<strong>instanceof</strong>: comprueba el tipo real:
+<pre>if (a instanceof Perro) {
+    Perro p = (Perro) a; // casting
+    p.ladrar();
+}</pre>`},
+      {title:'Clases abstractas e interfaces',
+       body:`<strong>Clase abstracta</strong>: no se puede instanciar, puede tener métodos sin implementar.
+<pre>public abstract class Figura {
+    public abstract double area(); // sin implementación
+    public void describir() {
+        System.out.println("Soy una figura");
+    }
+}</pre>
+<strong>Interface</strong>: contrato, todos los métodos son abstractos (por defecto).
+<pre>public interface Dibujable {
+    void dibujar(); // abstracto
+}
+
+public class Circulo extends Figura implements Dibujable {
+    double radio;
+    public double area() { return Math.PI * radio * radio; }
+    public void dibujar() { System.out.println("O"); }
+}</pre>
+<div class="note">💡 Una clase puede implementar varias interfaces pero solo extender una clase.</div>`},
+    ]},
+  arrays:{
+    title:'Arrays y ArrayList',
+    intro:'Estructuras para almacenar colecciones de datos.',
+    concepts:[
+      {title:'Arrays unidimensionales',
+       body:`<pre>// Declarar y crear
+int[] nums = new int[5];
+String[] nombres = {"Ana", "Luis", "Eva"};
+
+// Acceder y modificar
+nums[0] = 10;
+System.out.println(nums[0]);
+
+// Longitud
+System.out.println(nums.length); // 5
+
+// Recorrer
+for (int n : nums) {
+    System.out.println(n);
+}</pre>
+<div class="note">⚠️ Índices van de 0 a length-1. Acceder a length lanza ArrayIndexOutOfBoundsException.</div>`},
+      {title:'Arrays bidimensionales',
+       body:`<pre>int[][] matriz = new int[3][3];
+matriz[0][0] = 1;
+
+// Declarar con valores
+int[][] m = {{1,2,3},{4,5,6},{7,8,9}};
+
+// Recorrer
+for (int i = 0; i < m.length; i++) {
+    for (int j = 0; j < m[i].length; j++) {
+        System.out.print(m[i][j] + " ");
+    }
+    System.out.println();
+}</pre>`},
+      {title:'ArrayList (tamaño dinámico)',
+       body:`<pre>import java.util.ArrayList;
+
+ArrayList&lt;String&gt; lista = new ArrayList&lt;&gt;();
+
+// Añadir
+lista.add("Java");
+lista.add("Python");
+
+// Obtener
+String s = lista.get(0); // "Java"
+
+// Tamaño
+int tam = lista.size();
+
+// Eliminar
+lista.remove(0);        // por índice
+lista.remove("Python"); // por valor
+
+// Recorrer
+for (String item : lista) {
+    System.out.println(item);
+}
+
+// Contiene
+boolean existe = lista.contains("Java");</pre>`},
+    ]},
+  strings:{
+    title:'Strings',
+    intro:'Manipulación de cadenas de texto en Java.',
+    concepts:[
+      {title:'Métodos principales de String',
+       body:`<pre>String s = "Hola Mundo";
+
+s.length()         // → 10
+s.charAt(0)        // → 'H'
+s.toUpperCase()    // → "HOLA MUNDO"
+s.toLowerCase()    // → "hola mundo"
+s.trim()           // elimina espacios al inicio/fin
+s.substring(0, 4)  // → "Hola"
+s.contains("Mund") // → true
+s.replace("Hola","Adiós") // → "Adiós Mundo"
+s.split(" ")       // → ["Hola", "Mundo"]
+s.indexOf("Mundo") // → 5
+s.equals("Hola Mundo")    // → true (comparación)
+s.equalsIgnoreCase("hola mundo") // → true</pre>`},
+      {title:'StringBuilder (cadenas mutables)',
+       body:`String es inmutable; cada + crea un nuevo objeto. Para concatenaciones en bucles usar StringBuilder.
+<pre>StringBuilder sb = new StringBuilder();
+sb.append("Hola");
+sb.append(" ");
+sb.append("Mundo");
+String resultado = sb.toString(); // "Hola Mundo"
+
+// Invertir
+sb.reverse(); // "odnuM aloH"
+
+// Insertar
+sb.insert(0, ">> ");</pre>
+<div class="note">💡 En bucles con muchas concatenaciones, StringBuilder es mucho más eficiente que String.</div>`},
+      {title:'Comparación de Strings',
+       body:`<strong>Nunca uses == para comparar Strings</strong> (compara referencias, no contenido).
+<pre>String a = "Hola";
+String b = new String("Hola");
+
+a == b          // false (distintas referencias)
+a.equals(b)     // true  (mismo contenido)
+a.equalsIgnoreCase(b) // ignora mayúsculas</pre>`},
+    ]},
+  excep:{
+    title:'Excepciones',
+    intro:'Gestión de errores en tiempo de ejecución.',
+    concepts:[
+      {title:'Jerarquía de excepciones',
+       body:`<ul>
+<li><strong>Throwable</strong>
+  <ul>
+    <li><strong>Error</strong>: problemas graves de la JVM (no gestionar)</li>
+    <li><strong>Exception</strong>
+      <ul>
+        <li><strong>RuntimeException</strong> (unchecked): NullPointerException, ArrayIndexOutOfBoundsException, ClassCastException</li>
+        <li>Checked: IOException, SQLException (deben declararse o capturarse)</li>
+      </ul>
+    </li>
+  </ul>
+</li>
+</ul>`},
+      {title:'try-catch-finally',
+       body:`<pre>try {
+    int[] arr = new int[3];
+    arr[5] = 10; // lanza ArrayIndexOutOfBoundsException
+} catch (ArrayIndexOutOfBoundsException e) {
+    System.out.println("Índice fuera de rango: " + e.getMessage());
+} catch (Exception e) {
+    System.out.println("Error genérico: " + e.getMessage());
+} finally {
+    System.out.println("Siempre se ejecuta");
+}</pre>
+<div class="note">💡 finally se ejecuta siempre, incluso si hay return en try o catch. Ideal para cerrar recursos.</div>`},
+      {title:'throws y throw',
+       body:`<strong>throws</strong>: declara que un método puede lanzar una excepción.
+<strong>throw</strong>: lanza una excepción manualmente.
+<pre>// throws en la firma del método
+public void leerFichero(String ruta) throws IOException {
+    // ...
+}
+
+// throw para lanzar
+public void setEdad(int e) {
+    if (e < 0) throw new IllegalArgumentException("Edad negativa");
+    this.edad = e;
+}</pre>`},
+      {title:'Try-with-resources',
+       body:`Cierra automáticamente los recursos al salir del bloque (requiere que implementen AutoCloseable).
+<pre>try (Connection con = DriverManager.getConnection(url, u, p);
+     Statement stmt = con.createStatement()) {
+    ResultSet rs = stmt.executeQuery("SELECT * FROM tabla");
+    // ...
+} catch (SQLException e) {
+    e.printStackTrace();
+}
+// con y stmt se cierran automáticamente</pre>`},
+    ]},
+  swing:{
+    title:'Swing – Interfaces Gráficas',
+    intro:'Creación de ventanas y componentes visuales con Java Swing.',
+    concepts:[
+      {title:'Componentes principales',
+       body:`<ul>
+<li><strong>JFrame</strong>: ventana principal</li>
+<li><strong>JPanel</strong>: contenedor para agrupar componentes</li>
+<li><strong>JLabel</strong>: texto o imagen estática</li>
+<li><strong>JButton</strong>: botón clicable</li>
+<li><strong>JTextField</strong>: campo de texto de una línea</li>
+<li><strong>JTextArea</strong>: campo de texto multilínea</li>
+<li><strong>JComboBox</strong>: lista desplegable</li>
+<li><strong>JCheckBox / JRadioButton</strong>: opciones seleccionables</li>
+</ul>`},
+      {title:'Estructura básica de una ventana',
+       body:`<pre>import javax.swing.*;
+import java.awt.*;
+
+public class MiVentana {
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Título");
+        frame.setSize(400, 300);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new FlowLayout());
+
+        JLabel label = new JLabel("Hola Mundo");
+        JButton boton = new JButton("Haz clic");
+
+        frame.add(label);
+        frame.add(boton);
+        frame.setVisible(true); // siempre al final
+    }
+}</pre>`},
+      {title:'Layouts (diseños)',
+       body:`<ul>
+<li><strong>FlowLayout</strong>: componentes en fila, saltan de línea si no caben</li>
+<li><strong>BorderLayout</strong>: 5 zonas: NORTH, SOUTH, EAST, WEST, CENTER</li>
+<li><strong>GridLayout(filas, cols)</strong>: cuadrícula uniforme</li>
+</ul>
+<pre>frame.setLayout(new GridLayout(2, 2)); // 2 filas, 2 columnas
+frame.add(new JButton("1"));
+frame.add(new JButton("2"));</pre>`},
+      {title:'Eventos y ActionListener',
+       body:`<pre>JButton btn = new JButton("Clic");
+JLabel lbl = new JLabel("Estado");
+
+// Con lambda (Java 8+)
+btn.addActionListener(e -> {
+    lbl.setText("¡Pulsado!");
+});
+
+// Con clase anónima (forma clásica)
+btn.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+        lbl.setText("¡Pulsado!");
+    }
+});</pre>
+<div class="note">💡 Importar: import java.awt.event.ActionListener; y import java.awt.event.ActionEvent;</div>`},
+    ]},
+  jdbc:{
+    title:'Persistencia con JDBC',
+    intro:'Conexión y operaciones con bases de datos desde Java.',
+    concepts:[
+      {title:'Pasos para usar JDBC',
+       body:`<ol style="padding-left:1.2rem;line-height:2">
+<li>Importar <code>java.sql.*</code></li>
+<li>Obtener una <strong>Connection</strong> con DriverManager</li>
+<li>Crear un <strong>Statement</strong> o <strong>PreparedStatement</strong></li>
+<li>Ejecutar la consulta → obtener <strong>ResultSet</strong></li>
+<li>Procesar el ResultSet</li>
+<li>Cerrar recursos (en finally o try-with-resources)</li>
+</ol>`},
+      {title:'Conexión y consulta SELECT',
+       body:`<pre>import java.sql.*;
+
+String url  = "jdbc:mysql://localhost:3306/midb";
+String user = "root";
+String pass = "1234";
+
+try (Connection con = DriverManager.getConnection(url, user, pass);
+     Statement stmt = con.createStatement();
+     ResultSet rs = stmt.executeQuery("SELECT * FROM usuarios")) {
+
+    while (rs.next()) {
+        int id     = rs.getInt("id");
+        String nom = rs.getString("nombre");
+        System.out.println(id + " - " + nom);
+    }
+} catch (SQLException e) {
+    e.printStackTrace();
+}</pre>`},
+      {title:'PreparedStatement (INSERT / UPDATE)',
+       body:`Más seguro que Statement: evita SQL Injection y es más eficiente.
+<pre>String sql = "INSERT INTO usuarios (nombre, edad) VALUES (?, ?)";
+
+try (Connection con = DriverManager.getConnection(url, user, pass);
+     PreparedStatement ps = con.prepareStatement(sql)) {
+
+    ps.setString(1, "Ana");
+    ps.setInt(2, 25);
+    int filas = ps.executeUpdate(); // retorna nº de filas afectadas
+    System.out.println("Insertadas: " + filas);
+} catch (SQLException e) {
+    e.printStackTrace();
+}</pre>`},
+      {title:'Métodos de ResultSet',
+       body:`<pre>rs.next()          // avanza a la siguiente fila (false si no hay más)
+rs.getInt("col")   // obtiene un entero
+rs.getString("col")// obtiene un String
+rs.getDouble("col")// obtiene un double
+rs.getBoolean("col")
+
+// También por índice (empieza en 1):
+rs.getString(1)</pre>
+<div class="note">⚠️ Siempre llamar rs.next() antes de acceder a datos. Normalmente dentro de while (rs.next()).</div>`},
+    ]},
+};
+
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+let currentTopic = null;
+let currentEx    = null;
+let usedIdx      = {};
+let stats        = {done:0, ok:0};
+let activeChapter = 'basico';
+
+/* ═══════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('sc-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+}
+function goHome() { showScreen('home'); }
+
+/* ═══════════════════════════════════════
+   HOME — RENDER TOPICS
+═══════════════════════════════════════ */
+function renderTopics() {
+  const g = document.getElementById('topic-grid');
+  g.innerHTML = topics.map(t => {
+    const cnt = (exercises[t.id]||[]).length;
+    return `<div class="topic-card" style="--bar-color:${t.color}" onclick="startTopic('${t.id}')">
+      <span class="badge">${cnt} ejerc.</span>
+      <span class="ico">${t.icon}</span>
+      <div class="name">${t.label}</div>
+      <div class="sub">${t.sub}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════
+   EXERCISE LOGIC
+═══════════════════════════════════════ */
+function startTopic(id) {
+  currentTopic = id;
+  if (!usedIdx[id]) usedIdx[id] = [];
+  showScreen('exercise');
+  loadExercise(id);
+}
+
+function loadExercise(id) {
+  const list = exercises[id] || [];
+  let avail = list.map((_,i)=>i).filter(i => !usedIdx[id].includes(i));
+  if (!avail.length) { usedIdx[id]=[]; avail=list.map((_,i)=>i); }
+  const idx = avail[Math.floor(Math.random()*avail.length)];
+  usedIdx[id].push(idx);
+  currentEx = {...list[idx], topicId:id};
+  renderExercise(list.length);
+}
+
+function renderExercise(total) {
+  const t = topics.find(x => x.id === currentEx.topicId);
+  const tagEl = document.getElementById('ex-tag');
+  tagEl.textContent = t.label;
+  tagEl.className = 'ex-tag tag-' + t.tag;
+
+  const used = usedIdx[currentEx.topicId].length;
+  document.getElementById('ex-dots').innerHTML =
+    Array.from({length:Math.min(total,7)},(_,i) =>
+      `<div class="dot ${i < used ? 'on':''}"></div>`).join('');
+
+  document.getElementById('ex-q').textContent = currentEx.q;
+  const ce = document.getElementById('ex-code');
+  if (currentEx.code && currentEx.code.trim()) {
+    ce.textContent = currentEx.code; ce.style.display='block';
+  } else { ce.style.display='none'; }
+
+  document.getElementById('ans').value = '';
+  const fb = document.getElementById('fb');
+  fb.style.display='none'; fb.className='fb';
+  document.getElementById('btn-check').disabled = false;
+  document.getElementById('ex-body').scrollTop = 0;
+}
+
+function checkAnswer() {
+  const user = (document.getElementById('ans').value||'').trim();
+  if (!user) return;
+  stats.done++;
+  const norm = s => s.toLowerCase().replace(/\s+/g,' ').trim();
+  const ok = norm(user) === norm(currentEx.a);
+  if (ok) stats.ok++;
+  updateStats();
+  const fb = document.getElementById('fb');
+  if (ok) {
+    fb.className='fb ok';
+    fb.innerHTML='<div class="fb-title">✓ Correcto</div>Tu respuesta coincide con la solución.';
+  } else {
+    fb.className='fb bad';
+    fb.innerHTML=`<div class="fb-title">✗ Revisa tu respuesta</div>
+<span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Solución esperada</span>
+<pre>${esc(currentEx.a)}</pre>
+<div class="hint-lbl">💡 Pista</div>
+<div class="hint-txt">${currentEx.hint}</div>`;
+  }
+  fb.style.display='block';
+  document.getElementById('btn-check').disabled=true;
+  setTimeout(()=>fb.scrollIntoView({behavior:'smooth',block:'nearest'}),80);
+}
+
+function nextExercise() {
+  if (currentTopic) loadExercise(currentTopic);
+}
+
+function updateStats() {
+  document.getElementById('s-done').textContent = stats.done;
+  document.getElementById('s-ok').textContent   = stats.ok;
+  document.getElementById('s-pct').textContent  = stats.done > 0
+    ? Math.round(stats.ok/stats.done*100)+'%' : '—';
+}
+
+/* ═══════════════════════════════════════
+   STUDY LOGIC
+═══════════════════════════════════════ */
+function renderStudy() {
+  // tabs
+  document.getElementById('ch-tabs').innerHTML = chapters.map(c =>
+    `<div class="ch-tab ${c.id===activeChapter?'active':''}" onclick="selectChapter('${c.id}')">${c.label}</div>`
+  ).join('');
+
+  // content
+  const cont = document.getElementById('study-content');
+  cont.innerHTML = chapters.map(c => {
+    const ch = studyContent[c.id];
+    return `<div class="study-section ${c.id===activeChapter?'active':''}" id="ch-${c.id}">
+      <h3>${ch.title}</h3>
+      <p class="intro">${ch.intro}</p>
+      ${ch.concepts.map((con,i) => `
+        <div class="concept ${i===0?'open':''}" id="con-${c.id}-${i}">
+          <div class="concept-header" onclick="toggleConcept('con-${c.id}-${i}')">
+            <span class="ct">${con.title}</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="concept-body">${con.body}</div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function selectChapter(id) {
+  activeChapter = id;
+  document.querySelectorAll('.ch-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.study-section').forEach(s => s.classList.remove('active'));
+  document.querySelector(`.ch-tab[onclick="selectChapter('${id}')"]`).classList.add('active');
+  document.getElementById('ch-'+id).classList.add('active');
+  document.getElementById('study-content').scrollTop = 0;
+}
+
+function toggleConcept(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+/* ═══════════════════════════════════════
+   UTILS
+═══════════════════════════════════════ */
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+renderTopics();
+renderStudy();
+</script>
+</body>
+</html>
